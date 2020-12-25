@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from src.dataset import CUB as Dataset
 from src.sampler import Sampler
 from src.train_sampler import Train_Sampler
-from src.utils import count_acc, Averager
+from src.utils import count_acc, Averager, square_euclidean_metric
 from model import FewShotModel
 
 from torch.nn import functional as F
@@ -115,13 +115,11 @@ def train(args):
             out_query = out[k:].view(args.query, -1)
             protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
 
-            dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in range(args.query)])
-
+            logits = square_euclidean_metric(out_query, protos)
             out_query_soft = -F.log_softmax(-dists, dim = 1)
-            #logits = torch.tensor([dists[i, labels[i]] for i in range(args.query)])
-            logits = dists
-            losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)],requires_grad=True)
-            loss = losses.mean()
+            #losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)],requires_grad=True)
+            losses = out_query_soft.view(args.nway, -1, args.nway).sum(dim=1)*torch.eye(args.nway)
+            loss = losses.sum()/args.query
 
             """ TODO 2 END """
 
@@ -185,13 +183,11 @@ def train(args):
                         out_query = out[k:].view(args.query, -1)
                         protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
 
-                        dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in range(args.query)])
-
+                        logits = square_euclidean_metric(out_query, protos)
                         out_query_soft = -F.log_softmax(-dists, dim = 1)
-                        #logits = torch.tensor([dists[i, labels[i]] for i in range(args.query)])
-                        logits = dists
-                        losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)], requires_grad=True)
-                        loss = losses.mean()
+                        #losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)],requires_grad=True)
+                        losses = out_query_soft.view(args.nway, -1, args.nway).sum(dim=1)*torch.eye(args.nway)
+                        loss = losses.sum()/args.query
 
                         """ TODO 2 END """
 
