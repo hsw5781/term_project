@@ -84,7 +84,7 @@ def train(args):
             # note! data_shot shape is ( nway * kshot, 3, h, w ) not ( kshot * nway, 3, h, w )
             # Take care when reshape the data shot
             data_shot, data_query = data[:k], data[k:]
-            #k = args.nway * args.kshot
+            # k = args.nway * args.kshot
 
             label_shot, label_query = label[:k], label[k:]
             label_shot = sorted(list(set(label_shot.tolist())))
