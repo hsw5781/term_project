@@ -115,16 +115,17 @@ def train(args):
             out_query = out[k:].view(args.query, -1)
             protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
 
-            dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in args.query])
+            dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in range(args.query)])
 
             out_query_soft = -F.log_softmax(-dists, dim = 1)
-            pred = [out_query_soft[labels[i]] for i in range(args.query)]
-            logits = pred
-            loss = pred.sum()
+            #logits = torch.tensor([dists[i, labels[i]] for i in range(args.query)])
+            logits = dists
+            losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)],requires_grad=True)
+            loss = losses.mean()
 
             """ TODO 2 END """
 
-            acc = count_acc(logit, labels)
+            acc = count_acc(logits, labels)
 
             tl.add(loss.item())
             ta.add(acc)
@@ -184,16 +185,17 @@ def train(args):
                         out_query = out[k:].view(args.query, -1)
                         protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
 
-                        dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in args.query])
+                        dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in range(args.query)])
 
                         out_query_soft = -F.log_softmax(-dists, dim = 1)
-                        pred = [out_query_soft[labels[i]] for i in range(args.query)]
-                        logits = pred
-                        loss = pred.sum()
+                        #logits = torch.tensor([dists[i, labels[i]] for i in range(args.query)])
+                        logits = dists
+                        losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)], requires_grad=True)
+                        loss = losses.mean()
 
                         """ TODO 2 END """
 
-                        acc = count_acc(logit,labels)
+                        acc = count_acc(logits,labels)
 
                         vl.add(loss.item())
                         va.add(acc)
@@ -222,7 +224,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', default='model', help="name your experiment")
-    parser.add_argument('--dpath', '--d', default='./dataset/CUB_200_2011/CUB_200_2011', type=str,
+    parser.add_argument('--dpath', '--d', default='./CUB_200_2011/CUB_200_2011', type=str,
                         help='the path where dataset is located')
     parser.add_argument('--restore_ckpt', type=str, help="restore checkpoint")
     parser.add_argument('--nway', '--n', default=5, type=int, help='number of class in the support set (5 or 20)')

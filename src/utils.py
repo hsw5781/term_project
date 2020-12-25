@@ -34,10 +34,10 @@ def count_acc(logits, label):
     """
 
     # when logits is distance
-    #pred = torch.argmin(logits, dim=1)
+    pred = torch.argmin(logits, dim=1)
 
     # when logits is prob
-    pred = torch.argmax(logits, dim=1)
+    #pred = torch.argmax(logits, dim=1)
 
     return (pred == label).type(torch.cuda.FloatTensor).mean().item()
 
