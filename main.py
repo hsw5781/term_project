@@ -9,6 +9,8 @@ from src.train_sampler import Train_Sampler
 from src.utils import count_acc, Averager
 from model import FewShotModel
 
+from torch.nn import functional as F
+
 " User input value "
 TOTAL = 10000  # total step of training
 PRINT_FREQ = 50  # frequency of print loss and accuracy at training step
@@ -108,8 +110,17 @@ def train(args):
                 loss : torch scalar tensor which used for updating your model
                 logits : A value to measure accuracy and loss
             """
+            out = model(data)
+            out_shot = out[:k].view(-1, args.nway, args.kshot)
+            out_query = out[k:].view(args.query, -1)
+            protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
 
-            YOUR CODE
+            dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in args.query])
+
+            out_query_soft = -F.log_softmax(-dists, dim = 1)
+            pred = [out_query_soft[labels[i]] for i in range(args.query)]
+            logits = pred
+            loss = pred.sum()
 
             """ TODO 2 END """
 
@@ -168,7 +179,17 @@ def train(args):
                             logits : A value to measure accuracy and loss
                         """
 
-                        YOUR CODE
+                        out = model(data)
+                        out_shot = out[:k].view(-1, args.nway, args.kshot)
+                        out_query = out[k:].view(args.query, -1)
+                        protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
+
+                        dists = torch.stack([torch.pow(protos - out_query[i], 2).sum(1) for i in args.query])
+
+                        out_query_soft = -F.log_softmax(-dists, dim = 1)
+                        pred = [out_query_soft[labels[i]] for i in range(args.query)]
+                        logits = pred
+                        loss = pred.sum()
 
                         """ TODO 2 END """
 
