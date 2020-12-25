@@ -20,12 +20,25 @@ VAL_TOTAL = 100
 
 def train(args):
     # the number of N way, K shot images
+    # size of a support set
     k = args.nway * args.kshot
 
     # Train data loading
     dataset = Dataset(args.dpath, state='train')
+    # generate dataset for training
+    # dataset._imgs contains images (plt) allocated for training
+    # dataset._labels contains corresponding label (int) allocated for training
+    # dataset[i] will return dataset._imgs[i] not img[i]
+
     train_sampler = Train_Sampler(dataset._labels, n_way=args.nway, k_shot=args.kshot, query=args.query)
+    # train_sampler.idxes contains where the corresponding class is.
+    # i.e. train_sampler.idxes[0] returns array of indices those label are 0
+    # train_sampler permutates idxes and select n_way classes
+    # then per a class, select (k_shot + n_query/n_way) images
+    # finally it yield all image locations for episode
+
     data_loader = DataLoader(dataset=dataset, batch_sampler=train_sampler, num_workers=4, pin_memory=True)
+    # data_loader will load a batch (equivalent as an episode)
 
     # Validation data loading
     val_dataset = Dataset(args.dpath, state='val')
@@ -71,6 +84,7 @@ def train(args):
             # note! data_shot shape is ( nway * kshot, 3, h, w ) not ( kshot * nway, 3, h, w )
             # Take care when reshape the data shot
             data_shot, data_query = data[:k], data[k:]
+            #k = args.nway * args.kshot
 
             label_shot, label_query = label[:k], label[k:]
             label_shot = sorted(list(set(label_shot.tolist())))
@@ -183,6 +197,8 @@ def train(args):
 
 if __name__ == '__main__':
 
+    # argument parsing
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', default='model', help="name your experiment")
     parser.add_argument('--dpath', '--d', default='./dataset/CUB_200_2011/CUB_200_2011', type=str,
@@ -195,6 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--ntest', default=100, type=int, help='number of tests')
     parser.add_argument('--gpus', type=int, nargs='+', default=1)
 
+    # ex) args.names = 'model', args.dpath = './dataset...' 
     args = parser.parse_args()
 
     if not os.path.isdir('checkpoints'):
