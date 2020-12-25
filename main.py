@@ -13,7 +13,7 @@ from torch.nn import functional as F
 
 " User input value "
 TOTAL = 10000  # total step of training
-PRINT_FREQ = 50  # frequency of print loss and accuracy at training step
+PRINT_FREQ = 10  # frequency of print loss and accuracy at training step
 VAL_FREQ = 1000  # frequency of model eval on validation dataset
 SAVE_FREQ = 1000  # frequency of saving model
 
@@ -114,12 +114,11 @@ def train(args):
             out_shot = out[:k].view(-1, args.nway, args.kshot)
             out_query = out[k:].view(args.query, -1)
             protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
-
             logits = square_euclidean_metric(out_query, protos)
-            out_query_soft = -F.log_softmax(-dists, dim = 1)
-            #losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)],requires_grad=True)
-            losses = out_query_soft.view(args.nway, -1, args.nway).sum(dim=1)*torch.eye(args.nway)
-            loss = losses.sum()/args.query
+            out_query_soft = -F.log_softmax(-logits, dim = 1)
+            losses = out_query_soft.view(args.nway, -1, args.nway)
+            losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
+            loss = losses_sum.sum()/args.query
 
             """ TODO 2 END """
 
@@ -184,10 +183,10 @@ def train(args):
                         protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
 
                         logits = square_euclidean_metric(out_query, protos)
-                        out_query_soft = -F.log_softmax(-dists, dim = 1)
-                        #losses = torch.tensor([out_query_soft[i, labels[i]] for i in range(args.query)],requires_grad=True)
-                        losses = out_query_soft.view(args.nway, -1, args.nway).sum(dim=1)*torch.eye(args.nway)
-                        loss = losses.sum()/args.query
+                        out_query_soft = -F.log_softmax(-logits, dim = 1)
+                        losses = out_query_soft.view(args.nway, -1, args.nway)
+                        losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
+                        loss = losses_sum.sum()/args.query
 
                         """ TODO 2 END """
 
