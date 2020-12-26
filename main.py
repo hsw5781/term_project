@@ -116,9 +116,11 @@ def train(args):
             protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
             logits = square_euclidean_metric(out_query, protos)
             out_query_soft = -F.log_softmax(-logits, dim = 1)
-            losses = out_query_soft.view(args.nway, -1, args.nway)
-            losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
-            loss = losses_sum.sum()/args.query
+            #losses = out_query_soft.view(args.nway, -1, args.nway)
+            #losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
+            #loss = losses_sum.sum()/args.query
+            losses = out_query_soft[torch.arange(args.query), labels]
+            loss = losses.mean()
 
             """ TODO 2 END """
 
@@ -184,9 +186,11 @@ def train(args):
 
                         logits = square_euclidean_metric(out_query, protos)
                         out_query_soft = -F.log_softmax(-logits, dim = 1)
-                        losses = out_query_soft.view(args.nway, -1, args.nway)
-                        losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
-                        loss = losses_sum.sum()/args.query
+                        #losses = out_query_soft.view(args.nway, -1, args.nway)
+                        #losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
+                        #loss = losses_sum.sum()/args.query
+                        losses = out_query_soft[torch.arange(args.query), labels]
+                        loss = losses.mean()
 
                         """ TODO 2 END """
 
