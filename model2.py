@@ -54,7 +54,7 @@ class FewShotModel(nn.Module):
         return x
 '''
 
-class NewModel(nn.Module):
+class FewShotModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer0 = nn.Sequential(

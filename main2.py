@@ -273,7 +273,7 @@ if __name__ == '__main__':
                         help='number of data in each class in the support set (1 or 5)')
     parser.add_argument('--query', '--q', default=20, type=int, help='number of query data')
     parser.add_argument('--ntest', default=100, type=int, help='number of tests')
-    parser.add_argument('--gpus', type=int, nargs='+', default=0)
+    parser.add_argument('--gpus', type=int, nargs='+', default=2)
     parser.add_argument('--test_mode', type=int, default=0, help="if you want to test the model, change the value to 1")
 
     args = parser.parse_args()
