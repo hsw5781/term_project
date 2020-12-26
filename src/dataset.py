@@ -69,7 +69,8 @@ class CUB(Dataset):
 
         img = Image.fromarray(img, mode='RGB')
         img = transforms.Resize((512, 512), Image.BILINEAR)(img)
-        img = transforms.CenterCrop((400, 400))(img)
+        #img = transforms.CenterCrop((400, 400))(img)
+        img = transforms.FiveCrop(400)(img)
         img = transforms.RandomHorizontalFlip()(img)
         img = transforms.ToTensor()(img)
         img = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])(img)
