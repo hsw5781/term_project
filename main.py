@@ -6,19 +6,62 @@ from torch.utils.data import DataLoader
 from src.dataset import CUB as Dataset
 from src.sampler import Sampler
 from src.train_sampler import Train_Sampler
-from src.utils import count_acc, Averager, square_euclidean_metric
+from src.utils import count_acc, Averager, csv_write, square_euclidean_metric
 from model import FewShotModel
 
 from torch.nn import functional as F
 
+from src.test_dataset import CUB as Test_Dataset
+from src.test_sampler import Test_Sampler
 " User input value "
 TOTAL = 10000  # total step of training
-PRINT_FREQ = 10  # frequency of print loss and accuracy at training step
-VAL_FREQ = 1000  # frequency of model eval on validation dataset
-SAVE_FREQ = 1000  # frequency of saving model
+PRINT_FREQ = 50  # frequency of print loss and accuracy at training step
+VAL_FREQ = 100  # frequency of model eval on validation dataset
+SAVE_FREQ = 100  # frequency of saving model
+TEST_SIZE = 200  # fixed
 
 " fixed value "
 VAL_TOTAL = 100
+
+def Test_phase(model, args, k):
+    model.eval()
+
+    csv = csv_write(args)
+
+    dataset = Test_Dataset(args.dpath)
+    test_sampler = Test_Sampler(dataset._labels, n_way=args.nway, k_shot=args.kshot, query=args.query)
+    test_loader = DataLoader(dataset=dataset, batch_sampler=test_sampler, num_workers=4, pin_memory=True)
+
+    print('Test start!')
+    for i in range(TEST_SIZE):
+        for episode in test_loader:
+            data = episode.cuda()
+
+            data_shot, data_query = data[:k], data[k:]
+
+            """ TEST Method """
+            """ Predict the query images belong to which classes
+            
+            At the training phase, you measured logits. 
+            The logits can be distance or similarity between query images and 5 images of each classes.
+            From logits, you can pick a one class that have most low distance or high similarity.
+            
+            ex) # when logits is distance
+                pred = torch.argmin(logits, dim=1)
+            
+                # when logits is prob
+                pred = torch.argmax(logits, dim=1)
+                
+            pred is torch.tensor with size [20] and the each component value is zero to four
+            """
+
+            # save your prediction as StudentID_Name.csv file
+            csv.add(pred)
+
+    csv.close()
+    print('Test finished, check the csv file!')
+    exit()
+
 
 def train(args):
     # the number of N way, K shot images
@@ -219,11 +262,9 @@ def train(args):
 
 if __name__ == '__main__':
 
-    # argument parsing
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', default='model', help="name your experiment")
-    parser.add_argument('--dpath', '--d', default='./CUB_200_2011/CUB_200_2011', type=str,
+    parser.add_argument('--dpath', '--d', default='../../term_project/src/dataset/CUB_200_2011/CUB_200_2011', type=str,
                         help='the path where dataset is located')
     parser.add_argument('--restore_ckpt', type=str, help="restore checkpoint")
     parser.add_argument('--nway', '--n', default=5, type=int, help='number of class in the support set (5 or 20)')
@@ -232,8 +273,8 @@ if __name__ == '__main__':
     parser.add_argument('--query', '--q', default=20, type=int, help='number of query data')
     parser.add_argument('--ntest', default=100, type=int, help='number of tests')
     parser.add_argument('--gpus', type=int, nargs='+', default=1)
+    parser.add_argument('--test_mode', type=int, default=0, help="if you want to test the model, change the value to 1")
 
-    # ex) args.names = 'model', args.dpath = './dataset...' 
     args = parser.parse_args()
 
     if not os.path.isdir('checkpoints'):

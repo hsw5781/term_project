@@ -1,5 +1,5 @@
 import torch
-
+import csv
 
 def square_euclidean_metric(a, b):
     """ Measure the euclidean distance (optional)
@@ -58,3 +58,22 @@ class Averager():
 
     def item(self):
         return self.v
+
+
+class csv_write():
+
+    def __init__(self, args):
+        self.f = open('StudentID_Name.csv', 'w', newline='')
+        self.write_number = 1
+        self.wr = csv.writer(self.f)
+        self.wr.writerow(['id', 'prediction'])
+        self.query_num = args.query
+
+    def add(self, prediction):
+
+        for i in range(self.query_num):
+          self.wr.writerow([self.write_number, int(prediction[i].item())])
+          self.write_number += 1
+
+    def close(self):
+        self.f.close()
