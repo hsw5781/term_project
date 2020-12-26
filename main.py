@@ -15,7 +15,7 @@ from src.test_dataset import CUB as Test_Dataset
 from src.test_sampler import Test_Sampler
 " User input value "
 TOTAL = 10000  # total step of training
-PRINT_FREQ = 50  # frequency of print loss and accuracy at training step
+PRINT_FREQ = 5  # frequency of print loss and accuracy at training step
 VAL_FREQ = 100  # frequency of model eval on validation dataset
 SAVE_FREQ = 100  # frequency of saving model
 TEST_SIZE = 200  # fixed
@@ -154,14 +154,18 @@ def train(args):
                 logits : A value to measure accuracy and loss
             """
             out = model(data)
-            out_shot = out[:k].view(-1, args.nway, args.kshot)
-            out_query = out[k:].view(args.query, -1)
-            protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
+            out_shot = out[:k].view(args.nway, args.kshot, -1)
+            out_query = out[k:]
+            protos = torch.mean(out_shot, 1) #prototypes
             logits = square_euclidean_metric(out_query, protos)
+
+            # for test
+            #target_inds = torch.arange(0, 5).view(5, 1, 1).expand(5, 4, 1).long().cuda()
+            #log_p_y = F.log_softmax(-logits, dim=1).view(5, 4, -1)
+            #loss = -log_p_y.gather(2, target_inds).squeeze().view(-1).mean()
+            
+            # loss
             out_query_soft = -F.log_softmax(-logits, dim = 1)
-            #losses = out_query_soft.view(args.nway, -1, args.nway)
-            #losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
-            #loss = losses_sum.sum()/args.query
             losses = out_query_soft[torch.arange(args.query), labels]
             loss = losses.mean()
 
@@ -223,15 +227,12 @@ def train(args):
                         """
 
                         out = model(data)
-                        out_shot = out[:k].view(-1, args.nway, args.kshot)
-                        out_query = out[k:].view(args.query, -1)
-                        protos = torch.mean(out_shot, 2).view(args.nway, -1) #prototypes
-
+                        out_shot = out[:k].view(args.nway, args.kshot, -1)
+                        out_query = out[k:]
+                        protos = torch.mean(out_shot, 1) #prototypes
                         logits = square_euclidean_metric(out_query, protos)
+
                         out_query_soft = -F.log_softmax(-logits, dim = 1)
-                        #losses = out_query_soft.view(args.nway, -1, args.nway)
-                        #losses_sum = losses.sum(dim=1)*(torch.eye(args.nway).cuda())
-                        #loss = losses_sum.sum()/args.query
                         losses = out_query_soft[torch.arange(args.query), labels]
                         loss = losses.mean()
 
@@ -264,7 +265,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', default='model', help="name your experiment")
-    parser.add_argument('--dpath', '--d', default='../../term_project/src/dataset/CUB_200_2011/CUB_200_2011', type=str,
+    parser.add_argument('--dpath', '--d', default='./CUB_200_2011/CUB_200_2011', type=str,
                         help='the path where dataset is located')
     parser.add_argument('--restore_ckpt', type=str, help="restore checkpoint")
     parser.add_argument('--nway', '--n', default=5, type=int, help='number of class in the support set (5 or 20)')
