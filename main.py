@@ -54,6 +54,13 @@ def Test_phase(model, args, k):
                 
             pred is torch.tensor with size [20] and the each component value is zero to four
             """
+            k = args.nway * args.kshot
+            out = model(data)
+            out_shot = out[:k].view(args.nway, args.kshot, -1)
+            out_query = out[k:]
+            protos = torch.mean(out_shot, 1) #prototypes
+            logits = square_euclidean_metric(out_query, protos)
+            pred = torch.argmin(logits, dim=1)
 
             # save your prediction as StudentID_Name.csv file
             csv.add(pred)
@@ -105,6 +112,9 @@ def train(args):
 
     model.cuda()
     model.train()
+
+    if args.test_mode == 1:
+        Test_phase(model, args, k)
 
     """ TODO 1.b (optional) """
     " Set an optimizer or scheduler for Few-shot classification (optional) "
