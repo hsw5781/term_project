@@ -7,7 +7,7 @@ from src.dataset import CUB as Dataset
 from src.sampler import Sampler
 from src.train_sampler import Train_Sampler
 from src.utils import count_acc, Averager, csv_write, square_euclidean_metric
-from model import FewShotModel
+from model2 import FewShotModel
 
 from torch.nn import functional as F
 
@@ -110,7 +110,7 @@ def train(args):
     " Set an optimizer or scheduler for Few-shot classification (optional) "
 
     # Default optimizer setting
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     """ TODO 1.b (optional) END """
 
@@ -273,7 +273,7 @@ if __name__ == '__main__':
                         help='number of data in each class in the support set (1 or 5)')
     parser.add_argument('--query', '--q', default=20, type=int, help='number of query data')
     parser.add_argument('--ntest', default=100, type=int, help='number of tests')
-    parser.add_argument('--gpus', type=int, nargs='+', default=2)
+    parser.add_argument('--gpus', type=int, nargs='+', default=1)
     parser.add_argument('--test_mode', type=int, default=0, help="if you want to test the model, change the value to 1")
 
     args = parser.parse_args()
