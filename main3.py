@@ -7,7 +7,7 @@ from src.dataset import CUB as Dataset
 from src.sampler import Sampler
 from src.train_sampler import Train_Sampler
 from src.utils import count_acc, Averager, csv_write, square_euclidean_metric
-from model2 import FewShotModel
+from model3 import FewShotModel
 
 from torch.nn import functional as F
 
@@ -15,9 +15,9 @@ from src.test_dataset import CUB as Test_Dataset
 from src.test_sampler import Test_Sampler
 " User input value "
 TOTAL = 10000  # total step of training
-PRINT_FREQ = 5  # frequency of print loss and accuracy at training step
-VAL_FREQ = 100  # frequency of model eval on validation dataset
-SAVE_FREQ = 100  # frequency of saving model
+PRINT_FREQ = 20  # frequency of print loss and accuracy at training step
+VAL_FREQ = 500  # frequency of model eval on validation dataset
+SAVE_FREQ = 500  # frequency of saving model
 TEST_SIZE = 200  # fixed
 
 " fixed value "
@@ -110,7 +110,7 @@ def train(args):
     " Set an optimizer or scheduler for Few-shot classification (optional) "
 
     # Default optimizer setting
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     """ TODO 1.b (optional) END """
 
@@ -264,7 +264,7 @@ def train(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--name', default='alexnet3', help="name your experiment")
+    parser.add_argument('--name', default='conv', help="name your experiment")
     parser.add_argument('--dpath', '--d', default='./CUB_200_2011/CUB_200_2011', type=str,
                         help='the path where dataset is located')
     parser.add_argument('--restore_ckpt', type=str, help="restore checkpoint")
@@ -273,7 +273,7 @@ if __name__ == '__main__':
                         help='number of data in each class in the support set (1 or 5)')
     parser.add_argument('--query', '--q', default=20, type=int, help='number of query data')
     parser.add_argument('--ntest', default=100, type=int, help='number of tests')
-    parser.add_argument('--gpus', type=int, nargs='+', default=1)
+    parser.add_argument('--gpus', type=int, nargs='+', default=2)
     parser.add_argument('--test_mode', type=int, default=0, help="if you want to test the model, change the value to 1")
 
     args = parser.parse_args()

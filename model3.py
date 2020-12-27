@@ -28,20 +28,14 @@ class FewShotModel(nn.Module):
             nn.Conv2d(192, 384, kernel_size=3, padding=1),
             nn.BatchNorm2d(384),
             nn.ReLU(),
-            nn.Conv2d(384, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-            nn.ReLU(),
             nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            nn.Conv2d(384, 512, kernel_size=3, padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU(),
             nn.Conv2d(512, 512, kernel_size=3, padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=3, stride=2)
+            nn.MaxPool2d(kernel_size=3, stride=2),
         )
 
     def forward(self, x):

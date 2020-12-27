@@ -7,7 +7,7 @@ from src.dataset import CUB as Dataset
 from src.sampler import Sampler
 from src.train_sampler import Train_Sampler
 from src.utils import count_acc, Averager, csv_write, square_euclidean_metric
-from model import FewShotModel
+from model2 import FewShotModel
 
 from torch.nn import functional as F
 
@@ -15,9 +15,9 @@ from src.test_dataset import CUB as Test_Dataset
 from src.test_sampler import Test_Sampler
 " User input value "
 TOTAL = 10000  # total step of training
-PRINT_FREQ = 5  # frequency of print loss and accuracy at training step
-VAL_FREQ = 100  # frequency of model eval on validation dataset
-SAVE_FREQ = 100  # frequency of saving model
+PRINT_FREQ = 50  # frequency of print loss and accuracy at training step
+VAL_FREQ = 500  # frequency of model eval on validation dataset
+SAVE_FREQ = 500  # frequency of saving model
 TEST_SIZE = 200  # fixed
 
 " fixed value "
